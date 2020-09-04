@@ -5,7 +5,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Return Promise object that is resolved with string value === 'Hooray!!! She said "Yes"!',
  * if boolean value === true is passed, resolved with string value === 'Oh no, she said "No".',
@@ -28,10 +27,18 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  return new Promise((res, rej) => {
+    if (typeof isPositiveAnswer !== 'boolean') {
+      rej(new Error('Wrong parameter is passed! Ask her again.'));
+    }
+    if (isPositiveAnswer) {
+      res('Hooray!!! She said "Yes"!');
+    } else {
+      res('Oh no, she said "No".');
+    }
+  });
 }
-
 
 /**
  * Return Promise object that should be resolved with array containing plain values.
@@ -48,8 +55,8 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(arr) {
+  return Promise.all(arr);
 }
 
 /**
@@ -71,8 +78,8 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(arr) {
+  return Promise.race(arr);
 }
 
 /**
@@ -92,8 +99,18 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+function chainPromises(array, action) {
+  const promises = array.reduce(async (acc, cur) => {
+    const a = await acc;
+    const b = await cur;
+    return action(a, b);
+  });
+  return (
+    Promise.resolve(promises)
+      .then((val) => val)
+      // eslint-disable-next-line no-console
+      .catch(() => console.log('err'))
+  );
 }
 
 module.exports = {

@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectagle object with width and height parameters and getArea() method
  *
@@ -20,10 +19,13 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  this.width = width;
+  this.height = height;
+  this.getArea = function getArea() {
+    return this.width * this.height;
+  };
 }
-
 
 /**
  * Returns the JSON representation of specified object
@@ -35,10 +37,9 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -51,10 +52,9 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  return Object.assign(Object.create(proto), JSON.parse(json));
 }
-
 
 /**
  * Css selectors builder
@@ -111,35 +111,72 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  errors: [
+    'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+    'Element, id and pseudo-element should not occur more then one time inside the selector',
+  ],
+  selector: '',
+  element: function element(value) {
+    this.error(1);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 1;
+    self.selector = `${this.selector}${value}`;
+    return self;
   },
-
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id: function id(value) {
+    this.error(2);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 2;
+    self.selector = `${this.selector}#${value}`;
+    return self;
   },
-
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class: function cls(value) {
+    this.error(3);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 3;
+    self.selector = `${this.selector}.${value}`;
+    return self;
   },
-
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr: function attr(value) {
+    this.error(4);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 4;
+    self.selector = `${this.selector}[${value}]`;
+    return self;
   },
-
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass: function pseudoClass(value) {
+    this.error(5);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 5;
+    self.selector = `${this.selector}:${value}`;
+    return self;
   },
-
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement: function pseudoElement(value) {
+    this.error(6);
+    const self = Object.create(cssSelectorBuilder);
+    self.priority = 6;
+    self.selector = `${this.selector}::${value}`;
+    return self;
   },
-
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine: function combine(selector1, combinator, selector2) {
+    const self = Object.create(cssSelectorBuilder);
+    self.selector = `${selector1.selector} ${combinator} ${selector2.selector}`;
+    return self;
+  },
+  stringify: function stringify() {
+    return this.selector;
+  },
+  error: function error(priority) {
+    if (this.priority > priority) {
+      throw new Error(this.errors[0]);
+    }
+    const check1 = this.priority === priority;
+    const check2 = priority === 1 || priority === 2 || priority === 6;
+    if (check1 && check2) {
+      throw new Error(this.errors[1]);
+    }
   },
 };
-
 
 module.exports = {
   Rectangle,
